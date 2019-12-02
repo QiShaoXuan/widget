@@ -1,0 +1,15 @@
+.float-container {
+  &.float-container__hide {
+    display: none;
+  }
+}
+
+.float-circle {
+  position: fixed;
+  z-index: 999;
+  border-radius: 50%;
+  cursor: move;
+
+  background: #dddddd;
+  font-size: 12px;
+}
