@@ -7,9 +7,9 @@ function scorllListener(screenNum = 1, lessFn, moreFn) {
     document.documentElement.scrollTop || document.body.scrollTop;
 
   if (commonScrollTop > clientHeight * screenNum) {
-    lessFn && lessFn();
-  } else {
     moreFn && moreFn();
+  } else {
+    lessFn && lessFn();
   }
 }
 

@@ -2,17 +2,16 @@ import React, { Component } from "react";
 import "./index.scss";
 import scrollendEvent from "./scrollEndEvent";
 import scorllListener from "./scrollListener";
-
 class DraggableCircle extends Component {
   static defaultProps = {
-    width: 100,
-    height: 100,
     left: 0,
     top: 0,
     style: "",
     className: "",
     endPadding: 20
   };
+  width = 0;
+  height = 0;
 
   constructor(props) {
     super(props);
@@ -22,9 +21,7 @@ class DraggableCircle extends Component {
     this.state = { left, top, show: false, showFloatCircle: false };
   }
   componentDidMount() {
-    const { width, height, endPadding } = this.props;
-    this.maxW = window.innerWidth - width - endPadding;
-    this.maxH = window.innerHeight - height - endPadding;
+    this.setConstant();
     this.oL = 0;
     this.oT = 0;
 
@@ -45,21 +42,39 @@ class DraggableCircle extends Component {
         this.setState({
           showFloatCircle: false
         }),
-      () =>
+      () => {
         scorllListener(
           1,
           () =>
             this.setState({
-              showFloatCircle: true
+              showFloatCircle: false
             }),
           () =>
-            this.setState({
-              showFloatCircle: false
-            })
-        ),
+            this.setState(
+              {
+                showFloatCircle: true
+              },
+              () => {
+                this.setConstant();
+              }
+            )
+        );
+      },
       200
     );
   }
+
+  setConstant = focusUpdate => {
+    if ((this.width && this.height) || focusUpdate) {
+      return;
+    }
+    const { endPadding } = this.props;
+    const { width, height } = this.circle.current.getBoundingClientRect();
+    this.width = width;
+    this.height = height;
+    this.maxW = window.innerWidth - this.width - endPadding;
+    this.maxH = window.innerHeight - this.height - endPadding;
+  };
 
   onTouchstart = e => {
     let touch = e.targetTouches[0];
@@ -95,9 +110,8 @@ class DraggableCircle extends Component {
 
   adsorption = () => {
     const { left } = this.state;
-    const { width } = this.props;
 
-    if (left + width / 2 <= window.innerWidth / 2) {
+    if (left + this.width / 2 <= window.innerWidth / 2) {
       this.assorptionAnimation("left");
     } else {
       this.assorptionAnimation("right");
@@ -106,7 +120,7 @@ class DraggableCircle extends Component {
   assorptionAnimation = bearing => {
     const displacement = 15;
     const { left } = this.state;
-    const { endPadding, width } = this.props;
+    const { endPadding } = this.props;
 
     switch (bearing) {
       case "left":
@@ -121,11 +135,11 @@ class DraggableCircle extends Component {
         }
         break;
       case "right":
-        if (left + width < window.innerWidth - endPadding) {
+        if (left + this.width < window.innerWidth - endPadding) {
           this.setState({
             left:
-              window.innerWidth - left - displacement - width < endPadding
-                ? window.innerWidth - width - endPadding
+              window.innerWidth - left - displacement - this.width < endPadding
+                ? window.innerWidth - this.width - endPadding
                 : left + displacement
           });
           requestAnimationFrame(() => this.assorptionAnimation(bearing));
@@ -134,7 +148,7 @@ class DraggableCircle extends Component {
     }
   };
   render() {
-    const { width, height, style, className } = this.props;
+    const { style, className } = this.props;
     const { left, top, showFloatCircle } = this.state;
 
     return (
@@ -146,7 +160,7 @@ class DraggableCircle extends Component {
         <div
           ref={this.circle}
           className={`float-circle  ${className} `}
-          style={{ ...style, width, height, left, top }}
+          style={{ ...style, left, top }}
         >
           {this.props.children}
         </div>
